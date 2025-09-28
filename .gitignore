@@ -13,3 +13,6 @@
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Local settings for Azure Functions
+api/local.settings.json
