@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GB Fiyat Grafikleri</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="index.html">Fiyat Tablosu</a>
+        <a href="graph.html" class="active">Grafik</a>
+        <a href="rise.html">Rise Online</a>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>Sunucu Fiyat Grafiği</h1>
+            <div style="margin: 20px 0; text-align: center;">
+                <label for="server-select" style="margin-right: 10px; font-weight: bold;">Sunucu Seçin:</label>
+                <select id="server-select" style="padding: 8px; border-radius: 5px; background-color: #3a3a3a; color: white; border: 1px solid #555;">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <select id="type-select" style="padding: 8px; border-radius: 5px; background-color: #3a3a3a; color: white; border: 1px solid #555; margin-left: 10px;">
+                    <option value="sell" selected>Satış</option>
+                    <option value="buy">Alış</option>
+                </select>
+            </div>
+        </header>
+        
+        <div class="chart-container" style="position: relative; margin: auto;">
+            <div class="legend-controls" style="text-align: center; margin-bottom: 10px;">
+                <button id="select-all-btn" class="legend-btn">Hepsini Seç</button>
+                <button id="deselect-all-btn" class="legend-btn">Hepsini Kaldır</button>
+            </div>
+            <div id="custom-legend-container"></div>
+            <div class="canvas-wrapper" style="position: relative; height: 60vh;">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+    <!-- Custom script for the graph -->
+    <script src="graph.js"></script>
+</body>
+</html>

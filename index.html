@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knight Online Fiyatları</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="index.html" class="active">Fiyat Tablosu</a>
+        <a href="graph.html">Grafik</a>
+        <a href="rise.html">Rise Online</a>
+    </nav>
+
+    <div class="main-content-wrapper">
+        <div class="container price-table-container">
+            <header>
+                <h1>Knight Online: <span style="color: #fdc211;">En Ucuz GB Fiyatları</span></h1>
+                <div class="update-info">
+                    <span>Son Güncellenme: <span id="last-updated">...</span></span>
+                </div>
+            </header>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="site-server">Site / Server</th>
+                        <th colspan="2">ZERO <span class="tag yeni">YENİ</span></th>
+                        <th colspan="2">FELIS <span class="tag yeni">YENİ</span></th>
+                        <th colspan="2">AGARTHA <span class="tag yeni">YENİ</span></th>
+                        <th colspan="2">PANDORA <span class="tag yeni">YENİ</span></th>
+                        <th colspan="2">DRYADS</th>
+                        <th colspan="2">DESTAN</th>
+                        <th colspan="2">MINARK</th>
+                        <th colspan="2">OREADS</th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th>Satış</th><th>Alış</th>
+                        <th>Satış</th><th>Alış</th>
+                        <th>Satış</th><th>Alış</th>
+                        <th>Satış</th><th>Alış</th>
+                        <th>Satış</th><th>Alış</th>
+                        <th>Satış</th><th>Alış</th>
+                        <th>Satış</th><th>Alış</th>
+                        <th>Satış</th><th>Alış</th>
+                    </tr>
+                </thead>
+                <tbody id="price-table-body">
+                    <tr class="clickable-row"><td><img></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td></tr>
+                    <tr class="clickable-row"><td><img></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td></tr>
+                    <tr class="clickable-row"><td><img></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td></tr>
+                    <tr class="clickable-row"><td><img></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td></tr>
+                    <tr class="clickable-row"><td><img></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td></tr>
+                    <tr class="clickable-row"><td><img></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td></tr>
+                    <tr class="clickable-row"><td><img></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td></tr>
+                    <tr class="clickable-row"><td><img></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td><td><span></span></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="server-status-container" class="container server-status-container">
+            <!-- This will be hidden with CSS -->
+        </div>
+    </div>
+    <div id="chart-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div class="chart-container-modal">
+                <canvas id="modalPriceChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="graph.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

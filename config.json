@@ -1,0 +1,27 @@
+{
+  "settings": {
+    "scrapeUrl": "https://www.enucuzgb.com/",
+    "cacheDurationSeconds": 60,
+    "logIntervalSeconds": 1800
+  },
+  "servers": [
+    { "name": "ZERO", "visible": true },
+    { "name": "FELIS", "visible": true },
+    { "name": "AGARTHA", "visible": true },
+    { "name": "PANDORA", "visible": true },
+    { "name": "DRYADS", "visible": true },
+    { "name": "DESTAN", "visible": true },
+    { "name": "MINARK", "visible": true },
+    { "name": "OREADS", "visible": true }
+  ],
+  "vendorConfig": [
+    { "id": "sonteklif", "displayName": "Sonteklif", "websiteUrl": "https://www.sonteklif.com/knight-online-gb-c-2", "visible": true, "displayOrder": 111 },
+    { "id": "bynogame", "displayName": "Bynogame", "websiteUrl": "https://www.bynogame.com/tr/oyunlar/knight-online/gold-bar", "visible": true, "displayOrder": 100 },
+    { "id": "kopazar", "displayName": "Kopazar", "websiteUrl": "https://www.kopazar.com/knight-online-gold-bar", "visible": true, "displayOrder": 121 },
+    { "id": "oyuneks", "displayName": "Oyuneks", "websiteUrl": "https://oyuneks.com/knight-online-world/knight-online-goldbar-ko-gb", "visible": true, "displayOrder": 131 },
+    { "id": "bursagb", "displayName": "BursaGB", "websiteUrl": "https://www.bursagb.com/knight-online-gb-c-4", "visible": true, "displayOrder": 141 },
+    { "id": "gamesatis", "displayName": "GameSatış", "websiteUrl": "https://www.gamesatis.com/knight-online-goldbar", "visible": true, "displayOrder": 151 },
+    { "id": "oyunfor", "displayName": "Oyunfor", "websiteUrl": "https://www.oyunfor.com/knight-online/gb-gold-bar", "visible": true, "displayOrder": 161 },
+    { "id": "klasgame", "displayName": "Klasgame", "websiteUrl": "https://www.klasgame.com/knightonline/knight-online-gb-goldbar-premium-cash", "visible": true, "displayOrder": 101 }
+  ]
+}
