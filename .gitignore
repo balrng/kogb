@@ -17,3 +17,11 @@ Thumbs.db
 
 # Local settings for Azure Functions
 api/local.settings.json
+
+# Environment files
+.env
+.env.local
+
+# Editor/project files
+.vscode/
+*.code-workspace
