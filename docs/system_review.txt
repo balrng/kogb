@@ -1,0 +1,135 @@
+Ko_gb Sistem Değerlendirmesi — Maliyet, Performans, Güvenlik (TR)
+
+Özet
+- Mevcut durum: Frontend /api uçlarına istek atıyor; Functions Blob’dan okuyor (config/config.json, cache/latest_with_trend.json, data/YYYY-MM-DD.json, cache/last_scrape_time.txt). Timer (zamanlayıcı) her dakika scrape edip trend cache ile last_scrape_time’ı güncelliyor; günlük JSON’a ise logIntervalSeconds (30 dk) dolunca append ediyor.
+- Ücretsiz katman etkisi: Bir sayfa yenilemesinde tipik olarak 1–2 API çağrısı (anasayfa: prices+lastUpdate, grafikte getHistory+config) tetikleniyor. Zamanlayıcı günde 1440 kez çalışıyor (bu en büyük sabit yük). Blob okuma/ yazma işlemleri endpoint başına 1’er tane.
+- Hızlı kazanımlar: 
+  1) Anasayfada tek uç: getDashboard (prices+lastUpdate tek cevap). 
+  2) Config’i statik (SWA) yayınla ve uzun süreli cache’le; Functions tarafında scrape başlarken Blob’daki “yetkili” config’i oku. 
+  3) ETag/If-None-Match ve Cache-Control başlıklarıyla 304 yanıtlarını etkin kullan. 
+  4) getHistory’de “son gün” seçimi için listeleme/exists ile gereksiz 404 denemelerini azalt.
+- Güvenlik kısa notlar: Storage connection string yalnızca Functions’ta (SWA App Settings) dursun; CORS’u prod domain’inle sınırla; getHistory için tarih formatını doğrula; CSP ekle; vendor linklerinde rel="noopener noreferrer" kullan.
+
+Timer Neden Vardı? Kaldıralım mı?
+- Timer’ı dahili scraping için eklemiştik (her dakika veri çekip trend cache’i güncellemek ve 30 dakikada bir günlük dosyasına eklemek).
+- Orijinal mimaride “harici scraper → Blob → API → Frontend” vardı. Eğer gerçekten harici scraper kullanacaksak, Timer’a ihtiyaç yok. 
+- Öneri:
+  • Harici scraper işlemeye devam edecekse: scrapeData timer trigger’ı kaldırılabilir (veya devre dışı). Functions sadece okuma (getDashboard/getPrices/getHistory) yapar. 
+  • Timer’ı sadece geri sayım göstermek için istemiyoruz; o amaçla eklenmemişti. Bu yüzden “bu sebeptense timerı kaldır” talebinle uyumlu: Timer’ı kaldırabiliriz.
+  • Backend’de config yalnızca “scrape başladığı sırada” okunacaksa: Bu okuma harici scraper’ın iş akışında Blob’dan bir kez yapılabilir. Frontend ise config’i statik SWA dosyasından alır.
+
+1) Maliyet (Cost)
+- Faturalamaya girenler: 
+  • Functions (Consumption/Free): yürütme sayısı ve süre. 
+  • Blob Storage: İşlemler (Okuma/Yazma/Listeleme) ve egress (dışa veri çıkışı).
+
+- Mevcut profil (Timer varken):
+  • Timer: 1/dak → 1440 çağrı/gün, trend cache ve last_scrape_time yazımı, günlük append koşullu. 
+  • Anasayfa: getPrices + getLastUpdate → 2 çağrı, 2 okuma. 
+  • Grafik sayfası: getHistory (+ getConfig) → 1–2 okuma.
+
+- Timer’ı kaldırırsak (harici scraper’a geçersek):
+  • Functions çağrıları yalnızca kullanıcı trafiki kadar olur (sayfa görüntüleme başına ~1 çağrıya kadar düşürülebilir: getDashboard). 
+  • Yazma maliyeti harici scraper’ın Blob’a yazdığı sıklığa bağlı olur (ör. 30 dakikada bir: günde ~48 kez; her seferinde trend cache + last_scrape_time + günlük append ≈ 3 yazma → günde ~144 yazma).
+
+- Çok kabaca işlem maliyeti (bölgeye göre değişir, yalnızca örnek hesabı):
+  • Blob okuma: ~0,004 USD / 10.000 okuma. 
+  • Blob yazma: ~0,05 USD / 10.000 yazma. 
+  • Örnek 1 (Timer yok, 10.000 sayfa/gün, tek API çağrısı):
+    - Okuma: 10.000/gün → 300.000/ay → 300k/10k×0,004 ≈ 0,12 USD/ay.
+    - Yazma (harici scraper 30 dk): 144/gün → ~4.320/ay → 4320/10k×0,05 ≈ 0,02 USD/ay.
+    - Egress (örnek): Yanıt ort. 50 KB → 10.000×50 KB = ~500 MB/gün → ~15 GB/ay → ~1–2 USD aralığı (bölgeye göre). 
+  • Örnek 2 (Timer var): Aylık +43k Functions çağrısı (1440×30) eklenir; yine 1M free request sınırının baya altında kalır ama Blob yazmaları artar.
+  • Sonuç: Timer’ı kaldırmak, hem Functions exec sayısını hem Blob yazma sıklığını azaltır — toplam maliyet daha öngörülebilir ve düşük kalır.
+
+- Config ve last_scrape_time yerleşimi:
+  • Config’i SWA’de statik yayınlamak: İlk yüklemede Functions+Blob okumasını ortadan kaldırır; uzun süreli cache’lenebilir. Değişiklikte yeni versiyonla (config.v2.json) deploy edilir.
+  • last_scrape_time’ı statik tutmak önerilmez (dakikalık değişim). Bunun yerine getDashboard içinde prices ile birlikte dönersen (tek çağrı), ayrı çağrıyı kaldırırsın.
+
+2) Performans
+- İsteklerin birleştirilmesi:
+- Anasayfa: getPrices → getDashboard. Use short in-memory TTL cache in the Function (env: GET_PRICES_TTL_SECONDS) to avoid blob read on every request. 
+
+  • Grafik: getHistory bugün yoksa önce exists/list ile “son gün”ü bir kez bul; 404’lara düşmeden indir.
+- Caching başlıkları:
+  • Cache-Control: public, max-age=60 (ya da dinamik). 
+  • ETag: Blob’un ETag’ini yanıt başlığına yansıt; If-None-Match geldiğinde 304 dön.
+  • SWA/Edge önbellekleri ile tarayıcı cache’i birlikte trafik ve gecikmeyi düşürür.
+- Timer kaldırılırsa: Backend yükü belirgin azalır. Harici scraper periyodik yazdığı için API sadece okuma yapar.
+- Frontend optimizasyonu:
+  • Config statik olduğunda uzun süreli cache (immutable dosya adı) ile tekrar yüklenmez.
+  • Modal/grafik açılışları yalnızca gerekli olduğunda getHistory çağırır; sayfa yükünde zorunlu değilse erteleyebilirsin.
+
+3) Güvenlik
+- Sırlar (Secrets):
+  • Storage connection string yalnızca Functions ortam değişkenlerinde (SWA App Settings). Client tarafına asla verilmez.
+- CORS:
+  • Lokal geliştirmede * kabul edilebilir; prod’da sadece kendi domain’lerini (www.example.com gibi) ekle.
+- Parametre doğrulama:
+  • getHistory date: YYYY-MM-DD regex; gelecekte startDate/endDate gelirse max aralık (örn. 31 gün) ve tarih mantığı validasyonu.
+- CSP (Content-Security-Policy):
+  • Basit bir CSP ekle (script-src 'self' https://cdn.jsdelivr.net; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'). CDN’leri whitelist et.
+- Vendor linkleri:
+  • target=_blank ise rel="noopener noreferrer" kullan.
+- Blob erişimi:
+  • Tüm container’lar Private olmalı. Erişim sadece Functions üzerinden; doğrudan SAS paylaşma yok.
+
+4) Bot/Saldırı ve Sık Yenileme Koruması
+- Azure Static Web Apps (SWA) önünde neler yapılabilir?
+  • SWA, Azure Front Door altyapısını kullanır; fakat tam WAF/rate limit özellikleri için ayrı Azure Front Door Standard/Premium + WAF ekleyebilirsin. IP başına rate limit ve bot imza kuralları yazılabilir.
+  • Alternatif: Cloudflare’i proxy olarak konumlandır (CNAME → SWA default domain). Cloudflare tarafında:
+    - DDoS koruma (varsayılan),
+    - Bot Fight Mode,
+    - Rate Limiting kuralları (planına göre),
+    - Edge cache (API yanıtlarını 60 sn cache’lemek) ile Functions yükü azalır.
+- Uygulama içi koruma (ek katman):
+  • Basit IP bazlı rate limit: Azure Table/Redis ile kaydırmalı pencere (sliding window). Ağır trafik IP’lerini 429 Too Many Requests ile kes.
+  • reCAPTCHA/hCaptcha yalnızca kritik uçlar için (grafik değil, form/aksiyon varsa).
+  • User-Agent/Referer kontrolleri (kolay atlatılabilir ama basit gürültüyü keser).
+
+5) Önerilen Değişiklikler (Adım Adım)
+A. Timer’ı kaldır (harici scraper senaryosu)
+  - scrapeData timer trigger’ı devre dışı bırak veya fonksiyonu kaldır. Scraper dışarıdan (GitHub Actions/Cron/başka bir worker) çalışıp Blob’a yazar.
+  - Functions yalnızca GET uçlarıyla okuma yapar (getDashboard/getPrices/getHistory/getConfig [opsiyonel]).
+
+B. Anasayfayı sadeleştir
+  - Yeni uç: /api/getDashboard → { latest_with_trend, last_scrape_time }.
+  - script.js: getPrices + getLastUpdate yerine tek çağrı.
+
+C. Config stratejisi
+  - Frontend: SWA’de statik config.vN.json (immutable), uzun süreli cache.
+  - Scraper: Çalışmaya başlarken Blob’daki config/config.json’ı bir kez oku (authoritative). 
+
+D. getHistory iyileştirmesi
+  - Bugün yoksa önce exists veya list ile en güncel günü belirle; tek indirme ile dön. 
+  - İsteğe bağlı: startDate, endDate; aralık doğrulaması (maks. 31 gün) ve performans için birleştirme.
+
+E. Cache ve başlıklar
+  - Tüm JSON yanıtlarına doğru Content-Type + Cache-Control ekle.
+  - ETag/If-None-Match ve 304 desteği (Blob ETag’i kullan).
+
+F. Güvenlik sertleştirme
+  - Prod CORS = kendi domain(ler)in.
+  - CSP başlığı.
+  - getHistory tarih doğrulaması ve aralık kısıtı.
+  - Vendor linklerinde rel="noopener noreferrer".
+
+6) Tahmini Maliyet (Timer kaldırıldı varsayımıyla)
+- Sayfa görüntüleme: Günde 10.000 (örnek) ve tek API çağrısı:
+  • Functions: ~10k/gün → ~300k/ay (1M free altında).
+  • Blob okuma: ~300k/ay → 300k/10k×0,004 ≈ 0,12 USD/ay.
+  • Blob yazma (harici scraper 30 dk): ~4.320/ay → 4320/10k×0,05 ≈ 0,02 USD/ay.
+  • Egress (50 KB ortalama, 10k/gün): ~15 GB/ay → bölgeye göre ~1–2 USD. 
+- Not: Bunlar kaba hesap; bölge/tarife/gerçek payload boyutuna göre değişir. Ama sıralama net: Blob işlemleri çok ucuz, asıl değişken egress ve istek sayısı. Edge cache + tek uç ile maliyet düşük kalır.
+
+7) Sonuç
+- Timer’ı kaldırıp harici scraper’a dönersek, okuma odaklı bir mimari kalır ve maliyet/perf daha öngörülebilir olur. 
+- Anasayfada tek endpoint, statik config, ETag/caching ve getHistory’de akıllı seçim ile hem yük hem gecikme düşer.
+- Bot/saldırı için Cloudflare veya Azure Front Door + WAF ile rate limiting, bot koruması ve edge cache tavsiye edilir; uygulama içinde de basit rate limit ve doğrulamalarla katmanlı savunma kurulur.
+
+Ekler: Uygulama Adımları Özet
+- Timer’ı kapat (veya kaldır), harici scraperı doğrula.
+- /api/getDashboard ekle ve frontend’i buna geçir.
+- Config’i SWA’de versiyonlu statik yayınla; scraper Blob’dan okusun.
+- getHistory’de exists/list ile son günü bul, 404 zinciri yok.
+- CORS’u prod domain’ine sabitle; CSP başlığı ekle; tarih parametrelerini doğrula.

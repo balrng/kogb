@@ -1,16 +1,24 @@
 {
   "name": "ko_gb",
   "version": "1.0.0",
-  "description": "",
+  "description": "Knight Online GB price comparison web app",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "serve .",
+    "build": "echo \"No build process required for static app\""
   },
-  "keywords": [],
+  "keywords": [
+    "knight-online",
+    "gaming",
+    "price-comparison"
+  ],
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  },
   "dependencies": {
-    "axios": "^1.12.2",
-    "cheerio": "^1.1.2"
+    "puppeteer": "^24.36.1"
   }
 }
