@@ -3,120 +3,50 @@ name: Azure Static Web Apps CI/CD
 on:
   push:
     branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - main
+      name: Azure Static Web Apps CI/CD
 
-jobs:
-  build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
-    runs-on: ubuntu-latest
-    name: Build and Deploy Job
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          lfs: false
+      on:
+        push:
+          branches:
+            - main
+        pull_request:
+          types: [opened, synchronize, reopened, closed]
+          branches:
+            - main
 
-      - name: Prepare clean deploy folder (use build output when available)
-        run: |
-          set -e
-          rm -rf deploy
-          mkdir -p deploy
+      jobs:
+        build_and_deploy_job:
+          if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+          runs-on: ubuntu-latest
+          name: Build and Deploy Job
+          steps:
+            - uses: actions/checkout@v3
+              with:
+                submodules: true
+                lfs: false
+            - name: Build And Deploy
+              id: builddeploy
+              uses: Azure/static-web-apps-deploy@v1
+              with:
+                azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_TREE_007553003 }}
+                repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+                action: "upload"
+                ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
+                # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
+                app_location: "/" # App source code path
+                api_location: "" # Api source code path - optional
+                output_location: "." # Built app content directory - optional
+                ###### End of Repository/Build Configurations ######
 
-          # Do NOT install dependencies or run pnpm here to avoid symlink/node_modules issues
-          # Prefer common build output directories if present
-          BUILD_DIR=""
-          for d in dist build public; do
-            if [ -d "$d" ]; then
-              BUILD_DIR="$d"
-              break
-            fi
-          done
-
-          if [ -n "$BUILD_DIR" ]; then
-            echo "Using build dir: $BUILD_DIR"
-            rsync -av --progress \
-              --exclude='.git/' \
-              --exclude='.github/' \
-              --exclude='node_modules/' \
-              --exclude='data/' \
-              --exclude='api/dev/' \
-              --exclude='api/*test*' \
-              --exclude='api/inspect*' \
+        close_pull_request_job:
+          if: github.event_name == 'pull_request' && github.event.action == 'closed'
+          runs-on: ubuntu-latest
+          name: Close Pull Request Job
+          steps:
+            - name: Close Pull Request
+              id: closepullrequest
+              uses: Azure/static-web-apps-deploy@v1
+              with:
+                azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_TREE_007553003 }}
+                action: "close"
               --exclude='api/seed*' \
-              --exclude='*.zip' \
-              --exclude='*.log' \
-              ${BUILD_DIR}/ deploy/
-          else
-            echo "No build dir found; copying repository files (excluding dev/test assets)"
-            rsync -av --progress \
-              --exclude='.git/' \
-              --exclude='.github/' \
-              --exclude='node_modules/' \
-              --exclude='data/' \
-              --exclude='api/dev/' \
-              --exclude='api/*test*' \
-              --exclude='api/inspect*' \
-              --exclude='api/seed*' \
-              --exclude='*.zip' \
-              --exclude='*.log' \
-              ./ deploy/
-          fi
-
-          # Always copy repo api/ into deploy/api so Azure Functions are included
-          if [ -d api ]; then
-            echo "Copying api/ to deploy/api"
-            mkdir -p deploy/api
-            rsync -av --progress api/ deploy/api/
-          fi
-
-          rm -f deploy/api/*puppeteer* || true
-          rm -f deploy/api/*test* || true
-          rm -rf deploy/api/dev || true
-          echo "Clean deploy prepared"
-
-      - name: Diagnose deploy contents
-        if: always()
-        run: |
-          echo "=== Deploy folder summary ==="
-          if [ -d deploy ]; then
-            echo "Total files:" $(find deploy -type f | wc -l)
-            echo "Total size:" $(du -sh deploy | awk '{print $1}')
-            echo "Top 50 largest files (path -- size):"
-            du -ah deploy | sort -rh | head -n 50
-          else
-            echo "deploy folder not found"
-          fi
-
-      - name: Build And Deploy
-        id: builddeploy
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_TREE_007553003 }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
-          action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "./deploy" # App source code path (use prepared deploy folder)
-          api_location: "./deploy/api" # Api source code path - optional (deploy prepares this)
-          output_location: "" # Built app content directory - optional
-          skip_app_build: true # Skip building the app
-          ###### End of Repository/Build Configurations ######
-
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    name: Close Pull Request Job
-    steps:
-      - name: Close Pull Request
-        id: closepullrequest
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_TREE_007553003 }}
-          action: "close"
