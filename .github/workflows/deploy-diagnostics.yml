@@ -1,0 +1,31 @@
+name: Deploy Diagnostics
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  collect-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: List repo top files
+        run: |
+          echo "Top 50 largest files in repo:";
+          find . -type f -not -path './.git/*' -printf '%s %p\n' | sort -nr | head -n 50 | awk '{printf "%10d %s\n", $1, $2}';
+
+      - name: Create zip of deployable files
+        run: |
+          # Exclude .git and node_modules and github workflows
+          zip -r deploy_artifact.zip . -x "*.git*" "**/node_modules/*" 
+          ls -lh deploy_artifact.zip || true
+
+      - name: Upload artifact for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-artifact
+          path: deploy_artifact.zip
