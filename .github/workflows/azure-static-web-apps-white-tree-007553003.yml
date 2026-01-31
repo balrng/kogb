@@ -23,33 +23,13 @@ jobs:
           submodules: true
           lfs: false
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: '8'
-
       - name: Prepare clean deploy folder (use build output when available)
         run: |
           set -e
           rm -rf deploy
           mkdir -p deploy
 
-          # Install dependencies if package.json exists (will respect .npmrc in repo)
-          if [ -f package.json ]; then
-            echo "package.json found — installing dependencies with pnpm"
-            pnpm install --frozen-lockfile || pnpm install
-          else
-            echo "No package.json — skipping install"
-          fi
-
-          # Run build script if present
-          if [ -f package.json ] && node -e "try{console.log(Boolean(require('./package.json').scripts && require('./package.json').scripts.build))}catch(e){console.log(false)}" | grep -q true; then
-            echo "Build script found — running pnpm run build"
-            pnpm run build
-          else
-            echo "No build script — skipping build"
-          fi
-
+          # Do NOT install dependencies or run pnpm here to avoid symlink/node_modules issues
           # Prefer common build output directories if present
           BUILD_DIR=""
           for d in dist build public; do
@@ -73,12 +53,6 @@ jobs:
               --exclude='*.zip' \
               --exclude='*.log' \
               ${BUILD_DIR}/ deploy/
-            # If repo has an API folder, copy it into deploy/api so SWA picks up functions
-            if [ -d api ]; then
-              echo "Copying api/ to deploy/api"
-              mkdir -p deploy/api
-              rsync -av --progress api/ deploy/api/
-            fi
           else
             echo "No build dir found; copying repository files (excluding dev/test assets)"
             rsync -av --progress \
@@ -93,6 +67,13 @@ jobs:
               --exclude='*.zip' \
               --exclude='*.log' \
               ./ deploy/
+          fi
+
+          # Always copy repo api/ into deploy/api so Azure Functions are included
+          if [ -d api ]; then
+            echo "Copying api/ to deploy/api"
+            mkdir -p deploy/api
+            rsync -av --progress api/ deploy/api/
           fi
 
           rm -f deploy/api/*puppeteer* || true
