@@ -291,12 +291,13 @@ function calculateTrends(latestSnapshot, previousSnapshot) {
     return latestSnapshot;
 }
 
-module.exports = async function (context, myTimer) {
-    context.log('Scrape timer function started');
+module.exports = async function (context, req) {
+    context.log('Scrape HTTP function started');
     
     const connectionString = process.env.KOGB_STORAGE_CONNECTION_STRING;
     if (!connectionString) {
         context.log.error('Storage connection string not set');
+        context.res = { status: 500, body: 'Storage connection string not set' };
         return;
     }
 
@@ -350,8 +351,17 @@ module.exports = async function (context, myTimer) {
         context.log('Updated CACHE time.');
         
         context.log(`Successfully completed scraping cycle`);
-    
+        context.res = {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body: {
+                ok: true,
+                scrapedAt: finalDataWithTrends.scrapedAt,
+                vendorCount: finalDataWithTrends.vendors.length
+            }
+        };
     } catch (error) {
         context.log.error(`Scraping error: ${error.message}`);
+        context.res = { status: 500, body: { ok: false, error: error.message } };
     }
 };
