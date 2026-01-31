@@ -103,6 +103,19 @@ jobs:
           rm -rf deploy/api/dev || true
           echo "Clean deploy prepared"
 
+      - name: Diagnose deploy contents
+        if: always()
+        run: |
+          echo "=== Deploy folder summary ==="
+          if [ -d deploy ]; then
+            echo "Total files:" $(find deploy -type f | wc -l)
+            echo "Total size:" $(du -sh deploy | awk '{print $1}')
+            echo "Top 50 largest files (path -- size):"
+            du -ah deploy | sort -rh | head -n 50
+          else
+            echo "deploy folder not found"
+          fi
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
