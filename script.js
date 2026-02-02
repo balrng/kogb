@@ -80,7 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pd = await priceResp.json();
                 if (pd.vendors) priceDataMap = new Map(pd.vendors.map(v=>[v.id,v]));
                 if (pd.scrapedAt && lastUpdatedElement) {
-                    lastUpdatedElement.textContent = new Date(pd.scrapedAt).toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+                    try {
+                        const d = new Date(pd.scrapedAt);
+                        lastUpdatedElement.textContent = d.toLocaleString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+                    } catch (e) {
+                        lastUpdatedElement.textContent = pd.scrapedAt;
+                    }
                 }
             }
             renderTable(visibleVendors, visibleServers, priceDataMap);

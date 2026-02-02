@@ -30,7 +30,7 @@ module.exports = async function (context, req) {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': `public, max-age=${Math.min(TTL_SECONDS, 60)}`
+                'Cache-Control': 'no-cache, max-age=0, must-revalidate'
             },
             body: _cache.body
         };
@@ -94,9 +94,9 @@ module.exports = async function (context, req) {
 
         context.res = {
             status: 200,
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': `public, max-age=${Math.min(TTL_SECONDS, 60)}`
+                'Cache-Control': 'no-cache, max-age=0, must-revalidate'
             },
             body: data
         };
