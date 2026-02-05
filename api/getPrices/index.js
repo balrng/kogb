@@ -19,12 +19,13 @@ async function streamToString(readableStream) {
 // Simple in-memory cache across warm function instances
 let _cache = { ts: 0, body: null };
 const TTL_SECONDS = parseInt(process.env.GET_PRICES_TTL_SECONDS || '30', 10);
+const DISABLE_PRICES_CACHE = (process.env.DISABLE_PRICES_CACHE === '1' || process.env.DISABLE_PRICES_CACHE === 'true');
 
 module.exports = async function (context, req) {
     context.log('getPrices: Function triggered');
 
     const now = Date.now();
-    if (_cache.body && (now - _cache.ts) < TTL_SECONDS * 1000) {
+    if (!DISABLE_PRICES_CACHE && _cache.body && (now - _cache.ts) < TTL_SECONDS * 1000) {
         context.log(`getPrices: Returning cached response (age=${Math.round((now - _cache.ts)/1000)}s)`);
         context.res = {
             status: 200,
@@ -89,8 +90,10 @@ module.exports = async function (context, req) {
         const data = await streamToString(downloadBlockBlobResponse.readableStreamBody);
         context.log('getPrices: Data length:', data.length);
 
-        // Update cache
-        _cache = { ts: Date.now(), body: data };
+        // Update cache (only if caching not disabled)
+        if (!DISABLE_PRICES_CACHE) {
+            _cache = { ts: Date.now(), body: data };
+        }
 
         context.res = {
             status: 200,
