@@ -246,7 +246,32 @@ async function scrapeVendorData(config, context) {
             context.log.error(`Response data: ${JSON.stringify(error.response.data)}`);
         }
 
-        // Return empty structure on error
+        // Try to use cached data as fallback
+        context.log('Attempting to load cached data from blob storage...');
+        try {
+            const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.KOGB_STORAGE_CONNECTION_STRING);
+            const containerClient = blobServiceClient.getContainerClient(configContainerName);
+            const blobClient = containerClient.getBlobClient('latest_with_trend.json');
+            const exists = await blobClient.exists();
+            
+            if (exists) {
+                const resp = await blobClient.download();
+                const txt = await streamToString(resp.readableStreamBody);
+                const cachedData = JSON.parse(txt);
+                
+                // Check if cached data has valid vendors
+                if (cachedData && cachedData.vendors && cachedData.vendors.length > 0) {
+                    context.log(`✓ Using cached data with ${cachedData.vendors.length} vendors from ${cachedData.scrapedAt}`);
+                    // Mark that this is stale cache
+                    cachedData.serverStatusHtml = `<div style="color: orange;">⚠️ Stale data (last update: ${cachedData.scrapedAt})</div>`;
+                    return cachedData;
+                }
+            }
+        } catch (cacheError) {
+            context.log.error('Failed to load cache:', cacheError.message);
+        }
+
+        // If no cache available, return empty structure with error message
         const now = new Date();
         const { year, month, day, hours, minutes, seconds } = getLocalDateParts(now);
 
@@ -260,7 +285,7 @@ async function scrapeVendorData(config, context) {
                     buyPrice: 0
                 }))
             })),
-            serverStatusHtml: '<div>Veri çekme hatası oluştu.</div>'
+            serverStatusHtml: '<div>Veri çekme hatası oluştu. Lütfen daha sonra tekrar deneyin.</div>'
         };
     }
 }
