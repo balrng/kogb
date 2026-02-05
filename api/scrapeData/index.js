@@ -197,6 +197,11 @@ async function scrapeVendorData(config, context) {
 
     } catch (error) {
         context.log.error(`Error scraping data: ${error.message}`);
+        context.log.error(`Error stack: ${error.stack}`);
+        if (error.response) {
+            context.log.error(`Response status: ${error.response.status}`);
+            context.log.error(`Response data: ${JSON.stringify(error.response.data)}`);
+        }
 
         // Return empty structure on error
         const now = new Date();

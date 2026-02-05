@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Trigger scraper
         run: |
-          curl -X POST "https://white-tree-007553003.azurestaticapps.net/api/scrapeDataTimer" \
+          curl -X POST "https://white-tree-007553003.6.azurestaticapps.net/api/scrapeDataTimer" \
             -H "Content-Type: application/json" \
             -d '{}' \
             -v
