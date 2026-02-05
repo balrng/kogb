@@ -1,6 +1,7 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
 const axios = require('axios');
 const cheerio = require('cheerio');
+const cloudscraper = require('cloudscraper');
 const { URL } = require('url');
 
 const containerName = "data";
@@ -8,9 +9,17 @@ const configContainerName = "cache";
 
 
 const BROWSER_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.9,tr;q=0.8'
+    'Accept-Language': 'en-US,en;q=0.9,tr;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'DNT': '1',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Cache-Control': 'max-age=0'
 };
 
 /**
@@ -92,28 +101,21 @@ async function scrapeVendorData(config, context) {
     
 
     try {
-        const [priceResponse] = await Promise.all([
-            axios.get(SCRAPE_URL, { headers: BROWSER_HEADERS })
-        ]);
-        let htmlContent = priceResponse.data;
-        // If Cloudflare JS challenge detected, fallback to Puppeteer to render the page
-        if (typeof htmlContent === 'string' && /DDoS_Protection|cdn-cgi|challenge-platform|cf-challenge/i.test(htmlContent)) {
-            context.log('Cloudflare/JS challenge detected in HTML; launching headless browser fallback');
-            try {
-                const puppeteer = require('puppeteer');
-                const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-                const page = await browser.newPage();
-                await page.setUserAgent(BROWSER_HEADERS['User-Agent']);
-                await page.goto(SCRAPE_URL, { waitUntil: 'networkidle2', timeout: 60000 });
-                htmlContent = await page.content();
-                await browser.close();
-                context.log('Browser fallback rendered HTML length:', htmlContent.length);
-            } catch (e) {
-                context.log.error('Puppeteer fallback failed:', e.message);
-            }
+        let htmlContent;
+        context.log('Attempting to fetch with axios...');
+        try {
+            const priceResponse = await axios.get(SCRAPE_URL, { headers: BROWSER_HEADERS, timeout: 10000 });
+            htmlContent = priceResponse.data;
+            context.log('Successfully fetched with axios, content length:', htmlContent.length);
+        } catch (axiosError) {
+            context.log('Axios failed, trying cloudscraper...');
+            // Cloudflare blocks axios, try cloudscraper
+            htmlContent = await cloudscraper.get(SCRAPE_URL);
+            context.log('Successfully fetched with cloudscraper, content length:', htmlContent.length);
         }
-        context.log('scrapeVendorData: HTML response length:', priceResponse.data.length);
-        context.log('scrapeVendorData: First 500 chars:', priceResponse.data.slice(0, 500));
+        
+        context.log('scrapeVendorData: HTML response length:', htmlContent.length);
+        context.log('scrapeVendorData: First 500 chars:', htmlContent.slice(0, 500));
 
         const $ = cheerio.load(htmlContent);
         const vendors = [];

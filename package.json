@@ -19,6 +19,9 @@
     "serve": "^14.2.0"
   },
   "dependencies": {
-    "puppeteer": "^24.36.1"
+    "puppeteer": "^24.36.1",
+    "axios": "^1.6.5",
+    "cheerio": "^1.0.0-rc.12",
+    "cloudscraper": "^1.7.0"
   }
 }
