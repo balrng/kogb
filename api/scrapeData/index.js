@@ -1,12 +1,7 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
 const axios = require('axios');
 const cheerio = require('cheerio');
-const puppeteer = require('puppeteer');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { URL } = require('url');
-
-// Add stealth plugin to puppeteer
-puppeteer.use(StealthPlugin());
 
 const containerName = "data";
 const configContainerName = "cache";
@@ -107,53 +102,14 @@ async function scrapeVendorData(config, context) {
     try {
         let htmlContent;
         
-        // Try Puppeteer first (Cloudflare-friendly)
-        context.log('Attempting to fetch with Puppeteer...');
-        try {
-            const browser = await puppeteer.launch({ 
-                headless: 'new',
-                args: [
-                    '--no-sandbox', 
-                    '--disable-setuid-sandbox', 
-                    '--disable-dev-shm-usage',
-                    '--single-process',
-                    '--no-first-run'
-                ],
-                timeout: 30000
-            });
-            try {
-                const page = await browser.newPage();
-                // Set viewport
-                await page.setViewport({ width: 1280, height: 720 });
-                // Set user agent  
-                await page.setUserAgent(BROWSER_HEADERS['User-Agent']);
-                // Reduce timeout, but try to wait
-                await page.goto(SCRAPE_URL, { 
-                    waitUntil: 'domcontentloaded', 
-                    timeout: 30000 
-                });
-                htmlContent = await page.content();
-                context.log('✓ Successfully fetched with Puppeteer, content length:', htmlContent.length);
-            } finally {
-                try {
-                    await browser.close();
-                } catch (e) {
-                    context.log('Warning: browser.close() error:', e.message);
-                }
-            }
-        } catch (puppeteerError) {
-            context.log.error('Puppeteer failed:', puppeteerError.message);
-            // Try axios as fallback (probably won't work due to Cloudflare, but worth trying)
-            try {
-                context.log('Attempting fallback with axios...');
-                const priceResponse = await axios.get(SCRAPE_URL, { headers: BROWSER_HEADERS, timeout: 10000 });
-                htmlContent = priceResponse.data;
-                context.log('Axios fallback succeeded');
-            } catch (axiosError) {
-                context.log.error('Axios fallback also failed:', axiosError.message);
-                throw new Error(`Both Puppeteer and axios failed. Puppeteer: ${puppeteerError.message}, Axios: ${axiosError.message}`);
-            }
-        }
+        // Try axios (will fail on Cloudflare, but simple and lightweight)
+        context.log('Attempting to fetch with axios...');
+        const priceResponse = await axios.get(SCRAPE_URL, { 
+            headers: BROWSER_HEADERS, 
+            timeout: 10000
+        });
+        htmlContent = priceResponse.data;
+        context.log('Successfully fetched with axios, content length:', htmlContent.length);
         
         context.log('scrapeVendorData: HTML response length:', htmlContent.length);
         context.log('scrapeVendorData: First 500 chars:', htmlContent.slice(0, 500));
