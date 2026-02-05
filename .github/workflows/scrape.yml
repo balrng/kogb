@@ -1,26 +1,2 @@
-name: scheduled-scrape
-
-on:
-  schedule:
-    - cron: '*/30 * * * *' # every 30 minutes
-  workflow_dispatch:
-
-jobs:
-  call-scrape:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Call scrape endpoint
-        env:
-          SCRAPE_URL: ${{ secrets.SCRAPE_URL }}
-          SCRAPE_KEY: ${{ secrets.SCRAPE_KEY }}
-        run: |
-          if [ -z "$SCRAPE_URL" ]; then
-            echo "SCRAPE_URL not set; failing"
-            exit 1
-          fi
-          if [ -z "$SCRAPE_KEY" ]; then
-            curl -sS -X POST "$SCRAPE_URL" -o /tmp/scrape.out -w "HTTPSTATUS:%{http_code}"
-          else
-            curl -sS -X POST "${SCRAPE_URL}?code=${SCRAPE_KEY}" -o /tmp/scrape.out -w "HTTPSTATUS:%{http_code}"
-          fi
-          cat /tmp/scrape.out
+# This file should not exist - timer trigger is handled by Azure Functions scrapeDataTimer binding
+# Left empty or deleted; use git checkout to restore if needed
