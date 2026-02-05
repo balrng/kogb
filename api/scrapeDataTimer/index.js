@@ -22,9 +22,20 @@ loadLocalSettings();
 
 const scrapeFunction = require('../scrapeData/index.js');
 
-module.exports = async function (context, myTimer) {
+module.exports = async function (context, req) {
   context = context || { log: (...args) => console.log('[TIMER]', ...args), log: Object.assign((...a)=>console.log('[TIMER]',...a), { error: (...a)=>console.error('[TIMER][ERR]',...a) }) };
-  context.log('scrapeDataTimer: Triggered by timer');
+  
+  // Validate auth header (GitHub Actions scheduler must provide X-Scrape-Token)
+  const authToken = (req && req.headers && req.headers['x-scrape-token']) || process.env.SCRAPE_TOKEN || '';
+  const expectedToken = process.env.SCRAPE_TOKEN_VALUE || 'default-dev-token';
+  
+  if (!authToken || authToken !== expectedToken) {
+    context.log.error('Unauthorized scrape attempt');
+    context.res = { status: 401, body: { error: 'Unauthorized' } };
+    return;
+  }
+  
+  context.log('scrapeDataTimer: Triggered by scheduler');
   try {
     // Call the same scrape function; it accepts (context, req)
     await scrapeFunction(context, {});
