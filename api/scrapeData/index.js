@@ -1,8 +1,12 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
 const axios = require('axios');
 const cheerio = require('cheerio');
-const cloudscraper = require('cloudscraper');
+const puppeteer = require('puppeteer');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { URL } = require('url');
+
+// Add stealth plugin to puppeteer
+puppeteer.use(StealthPlugin());
 
 const containerName = "data";
 const configContainerName = "cache";
@@ -108,10 +112,21 @@ async function scrapeVendorData(config, context) {
             htmlContent = priceResponse.data;
             context.log('Successfully fetched with axios, content length:', htmlContent.length);
         } catch (axiosError) {
-            context.log('Axios failed, trying cloudscraper...');
-            // Cloudflare blocks axios, try cloudscraper
-            htmlContent = await cloudscraper.get(SCRAPE_URL);
-            context.log('Successfully fetched with cloudscraper, content length:', htmlContent.length);
+            context.log('Axios failed, trying Puppeteer with stealth plugin...');
+            // Cloudflare blocks axios, use Puppeteer with stealth plugin
+            const browser = await puppeteer.launch({ 
+                headless: 'new',
+                args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+            });
+            try {
+                const page = await browser.newPage();
+                await page.setUserAgent(BROWSER_HEADERS['User-Agent']);
+                await page.goto(SCRAPE_URL, { waitUntil: 'networkidle2', timeout: 30000 });
+                htmlContent = await page.content();
+                context.log('Successfully fetched with Puppeteer, content length:', htmlContent.length);
+            } finally {
+                await browser.close();
+            }
         }
         
         context.log('scrapeVendorData: HTML response length:', htmlContent.length);
