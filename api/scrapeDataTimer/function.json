@@ -1,9 +1,16 @@
 {
   "bindings": [
     {
-      "type": "timerTrigger",
+      "authLevel": "function",
+      "type": "httpTrigger",
       "direction": "in",
-      "schedule": "0 * * * * *"
+      "name": "req",
+      "methods": [ "POST", "GET" ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
     }
   ],
   "scriptFile": "index.js"
