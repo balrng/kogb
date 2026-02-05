@@ -1,2 +1,0 @@
-# This file should not exist - timer trigger is handled by Azure Functions scrapeDataTimer binding
-# Left empty or deleted; use git checkout to restore if needed
