@@ -1,1 +1,1 @@
-ko gb
+ko gb 1
