@@ -13,6 +13,5 @@ jobs:
         run: |
           curl -X POST "https://white-tree-007553003.azurestaticapps.net/api/scrapeDataTimer" \
             -H "Content-Type: application/json" \
-            -H "X-Scrape-Token: ${{ secrets.SCRAPE_TOKEN }}" \
             -d '{}' \
             -v
