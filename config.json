@@ -2,7 +2,7 @@
   "settings": {
     "scrapeUrl": "https://www.enucuzgb.com/",
     "cacheDurationSeconds": 60,
-    "logIntervalSeconds": 900
+    "logIntervalSeconds": 60
   },
   "servers": [
     { "name": "ZERO", "visible": true },
