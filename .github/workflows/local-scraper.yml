@@ -25,33 +25,44 @@ jobs:
         run: node local-scraper.js
         
       - name: Upload to Azure Blob Storage
+        if: success()
         run: |
-          npm install @azure/storage-blob
-          node -e "
+          npm install @azure/storage-blob --save
+          node << 'EOF'
           const fs = require('fs');
           const { BlobServiceClient } = require('@azure/storage-blob');
           
           const connStr = process.env.AZURE_STORAGE_CONNECTION;
-          const data = fs.readFileSync('local-scrape.json', 'utf-8');
-          
-          const client = BlobServiceClient.fromConnectionString(connStr);
-          const container = client.getContainerClient('cache');
-          const blob = container.getBlobClient('latest_with_trend.json');
-          
-          blob.upload(data, Buffer.byteLength(data)).then(() => {
-            console.log('✓ Uploaded to Azure Blob Storage');
-            const parsed = JSON.parse(data);
-            console.log(\`  Vendors: \${parsed.vendors.length}\`);
-            console.log(\`  Timestamp: \${parsed.scrapedAt}\`);
-          }).catch(err => {
-            console.error('✗ Upload failed:', err.message);
+          if (!connStr) {
+            console.error('❌ Error: AZURE_STORAGE_CONNECTION secret not set!');
+            console.error('Please add the secret to GitHub repository settings');
+            console.error('Go to: https://github.com/balrng/kogb/settings/secrets/actions');
             process.exit(1);
-          });
-          "
+          }
+          
+          try {
+            const data = fs.readFileSync('local-scrape.json', 'utf-8');
+            const client = BlobServiceClient.fromConnectionString(connStr);
+            const container = client.getContainerClient('cache');
+            const blob = container.getBlobClient('latest_with_trend.json');
+            
+            blob.upload(data, Buffer.byteLength(data)).then(() => {
+              const parsed = JSON.parse(data);
+              console.log('✓ Uploaded to Azure Blob Storage');
+              console.log(`  Vendors: ${parsed.vendors.length}`);
+              console.log(`  Timestamp: ${parsed.scrapedAt}`);
+            }).catch(err => {
+              console.error('✗ Upload failed:', err.message);
+              process.exit(1);
+            });
+          } catch (error) {
+            console.error('✗ Error:', error.message);
+            process.exit(1);
+          }
+          EOF
         env:
           AZURE_STORAGE_CONNECTION: ${{ secrets.AZURE_STORAGE_CONNECTION }}
-          
-      - name: Verify blob update
-        run: |
-          echo "✓ Scrape and upload workflow completed successfully"
-          echo "Blob will be served by /api/getPrices endpoint"
+        
+      - name: Workflow Status
+        if: success()
+        run: echo "✓ Scraper ran successfully and updated Azure Blob Storage"
