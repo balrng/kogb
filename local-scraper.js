@@ -118,9 +118,10 @@ async function scrapeData() {
             process.exit(1);
         }
         
-        // Generate data with timestamp
+        // Generate data with timestamp (Türkiye saati / GMT+3)
         const now = new Date();
-        const scrapedAt = now.toISOString().split('.')[0];
+        const turkeyTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }));
+        const scrapedAt = turkeyTime.toISOString().split('.')[0];
         
         const data = {
             scrapedAt,
