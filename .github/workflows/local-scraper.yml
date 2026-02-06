@@ -2,7 +2,7 @@ name: Local Scraper (GitHub-hosted)
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Every 5 minutes (UTC)
+    - cron: '*/10 * * * *'  # Every 10 minutes (UTC)
   workflow_dispatch:  # Manual trigger
 
 jobs:
