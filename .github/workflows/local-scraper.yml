@@ -24,7 +24,7 @@ jobs:
       - name: Run local scraper (Puppeteer on GitHub)
         run: node local-scraper.js
         
-      - name: Upload to Azure Blob Storage
+      - name: Upload to Azure Blob Storage & Daily Logging
         if: success()
         run: |
           npm install @azure/storage-blob --save
@@ -40,17 +40,64 @@ jobs:
           
           async function uploadBlob() {
             try {
-              const data = fs.readFileSync('local-scrape.json', 'utf-8');
               const client = BlobServiceClient.fromConnectionString(connStr);
-              const container = client.getContainerClient('cache');
-              const blobClient = container.getBlockBlobClient('latest_with_trend.json');
+              const cacheContainer = client.getContainerClient('cache');
+              const dataContainer = client.getContainerClient('data');
               
-              await blobClient.upload(data, Buffer.byteLength(data));
+              // 1. Upload latest_with_trend.json
+              const latestData = fs.readFileSync('local-scrape.json', 'utf-8');
+              const latestBlobClient = cacheContainer.getBlockBlobClient('latest_with_trend.json');
+              await latestBlobClient.upload(latestData, Buffer.byteLength(latestData));
               
-              const parsed = JSON.parse(data);
-              console.log('✓ Uploaded to Azure Blob Storage');
+              const parsed = JSON.parse(latestData);
+              console.log('✓ Uploaded cache/latest_with_trend.json');
               console.log(`  Vendors: ${parsed.vendors.length}`);
               console.log(`  Timestamp: ${parsed.scrapedAt}`);
+              
+              // 2. Daily logging (every 30 minutes)
+              const LOG_INTERVAL_SECONDS = 1800; // 30 minutes
+              const now = new Date();
+              const turkeyTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }));
+              const year = turkeyTime.getFullYear();
+              const month = String(turkeyTime.getMonth() + 1).padStart(2, '0');
+              const day = String(turkeyTime.getDate()).padStart(2, '0');
+              const dateFileName = \`\${year}-\${month}-\${day}.json\`;
+              
+              let dailyData = [];
+              try {
+                const downloadResp = await dataContainer.getBlobClient(dateFileName).download();
+                const chunks = [];
+                for await (const chunk of downloadResp.readableStreamBody) {
+                  chunks.push(chunk);
+                }
+                const content = Buffer.concat(chunks).toString('utf-8');
+                dailyData = JSON.parse(content);
+              } catch (err) {
+                // File doesn't exist yet, start fresh
+                console.log(\`  📄 Creating new daily file: \${dateFileName}\`);
+              }
+              
+              // Check if we should log (based on interval)
+              let shouldLog = true;
+              if (dailyData.length > 0) {
+                const lastLogTime = new Date(dailyData[dailyData.length - 1].scrapedAt);
+                const diffSeconds = (now.getTime() - lastLogTime.getTime()) / 1000;
+                if (diffSeconds < LOG_INTERVAL_SECONDS) {
+                  shouldLog = false;
+                  console.log(\`  ⏭️  Skipping daily log (last log: \${Math.round(diffSeconds)}s ago, interval: \${LOG_INTERVAL_SECONDS}s)\`);
+                }
+              }
+              
+              // Append to daily file if interval passed
+              if (shouldLog) {
+                dailyData.push(parsed);
+                const dailyBlobClient = dataContainer.getBlockBlobClient(dateFileName);
+                const dailyContent = JSON.stringify(dailyData, null, 2);
+                await dailyBlobClient.upload(dailyContent, Buffer.byteLength(dailyContent));
+                console.log(\`✓ Appended to data/\${dateFileName}\`);
+                console.log(\`  📊 Total entries today: \${dailyData.length}\`);
+              }
+              
             } catch (error) {
               console.error('✗ Upload failed:', error.message);
               process.exit(1);
