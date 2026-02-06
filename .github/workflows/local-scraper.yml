@@ -106,6 +106,8 @@ jobs:
           }
           uploadBlob();
           EOF
+        env:
+          KOGB_STORAGE_CONNECTION_STRING: ${{ secrets.KOGB_STORAGE_CONNECTION_STRING }}
         
       - name: Workflow Status
         if: success()
