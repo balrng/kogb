@@ -34,7 +34,7 @@ jobs:
           
           const connStr = process.env.KOGB_STORAGE_CONNECTION_STRING;
           if (!connStr) {
-            console.error('❌ Error: KOGB_STORAGE_CONNECTION_STRING secret not set!');
+            console.error('ÔØî Error: KOGB_STORAGE_CONNECTION_STRING secret not set!');
             process.exit(1);
           }
           
@@ -50,9 +50,9 @@ jobs:
               await latestBlobClient.upload(latestData, Buffer.byteLength(latestData));
               
               const parsed = JSON.parse(latestData);
-              console.log('✓ Uploaded cache/latest_with_trend.json');
-              console.log(`  Vendors: ${parsed.vendors.length}`);
-              console.log(`  Timestamp: ${parsed.scrapedAt}`);
+              console.log('Ô£ô Uploaded cache/latest_with_trend.json');
+              console.log('  Vendors: ' + parsed.vendors.length);
+              console.log('  Timestamp: ' + parsed.scrapedAt);
               
               // 2. Daily logging (every 30 minutes)
               const LOG_INTERVAL_SECONDS = 1800; // 30 minutes
@@ -61,7 +61,7 @@ jobs:
               const year = turkeyTime.getFullYear();
               const month = String(turkeyTime.getMonth() + 1).padStart(2, '0');
               const day = String(turkeyTime.getDate()).padStart(2, '0');
-              const dateFileName = \`\${year}-\${month}-\${day}.json\`;
+              const dateFileName = year + '-' + month + '-' + day + '.json';
               
               let dailyData = [];
               try {
@@ -74,7 +74,7 @@ jobs:
                 dailyData = JSON.parse(content);
               } catch (err) {
                 // File doesn't exist yet, start fresh
-                console.log(\`  📄 Creating new daily file: \${dateFileName}\`);
+                console.log('  Ô£å Creating new daily file: ' + dateFileName);
               }
               
               // Check if we should log (based on interval)
@@ -84,7 +84,7 @@ jobs:
                 const diffSeconds = (now.getTime() - lastLogTime.getTime()) / 1000;
                 if (diffSeconds < LOG_INTERVAL_SECONDS) {
                   shouldLog = false;
-                  console.log(\`  ⏭️  Skipping daily log (last log: \${Math.round(diffSeconds)}s ago, interval: \${LOG_INTERVAL_SECONDS}s)\`);
+                  console.log('  Ô£á Skipping daily log (last log: ' + Math.round(diffSeconds) + 's ago, interval: ' + LOG_INTERVAL_SECONDS + 's)');
                 }
               }
               
@@ -94,19 +94,18 @@ jobs:
                 const dailyBlobClient = dataContainer.getBlockBlobClient(dateFileName);
                 const dailyContent = JSON.stringify(dailyData, null, 2);
                 await dailyBlobClient.upload(dailyContent, Buffer.byteLength(dailyContent));
-                console.log(\`✓ Appended to data/\${dateFileName}\`);
-                console.log(\`  📊 Total entries today: \${dailyData.length}\`);
+                console.log('Ô£ô Appended to data/' + dateFileName);
+                console.log('  Ôªæ Total entries today: ' + dailyData.length);
               }
               
             } catch (error) {
-              console.error('✗ Upload failed:', error.message);
+              console.error('Ô£ù Upload failed: ' + error.message);
+              console.error(error);
               process.exit(1);
             }
           }
           uploadBlob();
           EOF
-        env:
-          KOGB_STORAGE_CONNECTION_STRING: ${{ secrets.KOGB_STORAGE_CONNECTION_STRING }}
         
       - name: Workflow Status
         if: success()
