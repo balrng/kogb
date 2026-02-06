@@ -1,0 +1,57 @@
+name: Local Scraper (GitHub-hosted)
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run local scraper (Puppeteer on GitHub)
+        run: node local-scraper.js
+        
+      - name: Upload to Azure Blob Storage
+        run: |
+          npm install @azure/storage-blob
+          node -e "
+          const fs = require('fs');
+          const { BlobServiceClient } = require('@azure/storage-blob');
+          
+          const connStr = process.env.AZURE_STORAGE_CONNECTION;
+          const data = fs.readFileSync('local-scrape.json', 'utf-8');
+          
+          const client = BlobServiceClient.fromConnectionString(connStr);
+          const container = client.getContainerClient('cache');
+          const blob = container.getBlobClient('latest_with_trend.json');
+          
+          blob.upload(data, Buffer.byteLength(data)).then(() => {
+            console.log('✓ Uploaded to Azure Blob Storage');
+            const parsed = JSON.parse(data);
+            console.log(\`  Vendors: \${parsed.vendors.length}\`);
+            console.log(\`  Timestamp: \${parsed.scrapedAt}\`);
+          }).catch(err => {
+            console.error('✗ Upload failed:', err.message);
+            process.exit(1);
+          });
+          "
+        env:
+          AZURE_STORAGE_CONNECTION: ${{ secrets.AZURE_STORAGE_CONNECTION }}
+          
+      - name: Verify blob update
+        run: |
+          echo "✓ Scrape and upload workflow completed successfully"
+          echo "Blob will be served by /api/getPrices endpoint"
