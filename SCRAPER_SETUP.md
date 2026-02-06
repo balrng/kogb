@@ -49,12 +49,12 @@ DefaultEndpointsProtocol=https;AccountName=kogbdata;AccountKey=xxx...
 Go to: **https://github.com/balrng/kogb/settings/secrets/actions**
 
 Click **"New repository secret"**:
-- **Name**: `AZURE_STORAGE_CONNECTION`
+- **Name**: `KOGB_STORAGE_CONNECTION_STRING`
 - **Value**: (Paste the connection string from step 1)
 
 Or using GitHub CLI:
 ```bash
-gh secret set AZURE_STORAGE_CONNECTION --body "YOUR_CONNECTION_STRING" -R balrng/kogb
+gh secret set KOGB_STORAGE_CONNECTION_STRING --body "YOUR_CONNECTION_STRING" -R balrng/kogb
 ```
 
 ### 3. Verify the Workflow
@@ -120,7 +120,8 @@ cat local-scrape.json
 
 ### Workflow Fails: "Secret not set"
 - Go to GitHub repo settings → Secrets → Actions
-- Add `AZURE_STORAGE_CONNECTION` secret
+- Add `KOGB_STORAGE_CONNECTION_STRING` secret
+- Make sure the value is the complete connection string from Azure
 
 ### Workflow Fails: "Upload failed"
 - Check the connection string is correct

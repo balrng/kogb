@@ -32,9 +32,9 @@ jobs:
           const fs = require('fs');
           const { BlobServiceClient } = require('@azure/storage-blob');
           
-          const connStr = process.env.AZURE_STORAGE_CONNECTION;
+          const connStr = process.env.KOGB_STORAGE_CONNECTION_STRING;
           if (!connStr) {
-            console.error('❌ Error: AZURE_STORAGE_CONNECTION secret not set!');
+            console.error('❌ Error: KOGB_STORAGE_CONNECTION_STRING secret not set!');
             console.error('Please add the secret to GitHub repository settings');
             console.error('Go to: https://github.com/balrng/kogb/settings/secrets/actions');
             process.exit(1);
@@ -61,7 +61,7 @@ jobs:
           }
           EOF
         env:
-          AZURE_STORAGE_CONNECTION: ${{ secrets.AZURE_STORAGE_CONNECTION }}
+          KOGB_STORAGE_CONNECTION_STRING: ${{ secrets.KOGB_STORAGE_CONNECTION_STRING }}
         
       - name: Workflow Status
         if: success()
