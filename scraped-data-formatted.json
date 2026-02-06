@@ -1,0 +1,366 @@
+﻿{
+    "scrapedAt":  "2026-02-05T23:56:35",
+    "vendors":  [
+                    {
+                        "id":  "sonteklif",
+                        "servers":  [
+                                        {
+                                            "serverName":  "ZERO",
+                                            "sellPrice":  460,
+                                            "buyPrice":  425
+                                        },
+                                        {
+                                            "serverName":  "FELIS",
+                                            "sellPrice":  189,
+                                            "buyPrice":  170
+                                        },
+                                        {
+                                            "serverName":  "AGARTHA",
+                                            "sellPrice":  410,
+                                            "buyPrice":  390
+                                        },
+                                        {
+                                            "serverName":  "PANDORA",
+                                            "sellPrice":  382,
+                                            "buyPrice":  365
+                                        },
+                                        {
+                                            "serverName":  "DRYADS",
+                                            "sellPrice":  240,
+                                            "buyPrice":  224
+                                        },
+                                        {
+                                            "serverName":  "DESTAN",
+                                            "sellPrice":  407,
+                                            "buyPrice":  390
+                                        },
+                                        {
+                                            "serverName":  "MINARK",
+                                            "sellPrice":  265,
+                                            "buyPrice":  250
+                                        },
+                                        {
+                                            "serverName":  "OREADS",
+                                            "sellPrice":  310,
+                                            "buyPrice":  293.6
+                                        }
+                                    ]
+                    },
+                    {
+                        "id":  "bynogame",
+                        "servers":  [
+                                        {
+                                            "serverName":  "ZERO",
+                                            "sellPrice":  469.99,
+                                            "buyPrice":  420
+                                        },
+                                        {
+                                            "serverName":  "FELIS",
+                                            "sellPrice":  193.99,
+                                            "buyPrice":  173
+                                        },
+                                        {
+                                            "serverName":  "AGARTHA",
+                                            "sellPrice":  422.99,
+                                            "buyPrice":  380
+                                        },
+                                        {
+                                            "serverName":  "PANDORA",
+                                            "sellPrice":  396.99,
+                                            "buyPrice":  370
+                                        },
+                                        {
+                                            "serverName":  "DRYADS",
+                                            "sellPrice":  238.99,
+                                            "buyPrice":  220
+                                        },
+                                        {
+                                            "serverName":  "DESTAN",
+                                            "sellPrice":  422.99,
+                                            "buyPrice":  388
+                                        },
+                                        {
+                                            "serverName":  "MINARK",
+                                            "sellPrice":  274.99,
+                                            "buyPrice":  255
+                                        },
+                                        {
+                                            "serverName":  "OREADS",
+                                            "sellPrice":  319.99,
+                                            "buyPrice":  290
+                                        }
+                                    ]
+                    },
+                    {
+                        "id":  "kopazar",
+                        "servers":  [
+                                        {
+                                            "serverName":  "ZERO",
+                                            "sellPrice":  460,
+                                            "buyPrice":  430
+                                        },
+                                        {
+                                            "serverName":  "FELIS",
+                                            "sellPrice":  190,
+                                            "buyPrice":  170
+                                        },
+                                        {
+                                            "serverName":  "AGARTHA",
+                                            "sellPrice":  410,
+                                            "buyPrice":  390
+                                        },
+                                        {
+                                            "serverName":  "PANDORA",
+                                            "sellPrice":  382,
+                                            "buyPrice":  362
+                                        },
+                                        {
+                                            "serverName":  "DRYADS",
+                                            "sellPrice":  240,
+                                            "buyPrice":  215
+                                        },
+                                        {
+                                            "serverName":  "DESTAN",
+                                            "sellPrice":  410,
+                                            "buyPrice":  387
+                                        },
+                                        {
+                                            "serverName":  "MINARK",
+                                            "sellPrice":  265,
+                                            "buyPrice":  237
+                                        },
+                                        {
+                                            "serverName":  "OREADS",
+                                            "sellPrice":  310,
+                                            "buyPrice":  285
+                                        }
+                                    ]
+                    },
+                    {
+                        "id":  "oyuneks",
+                        "servers":  [
+                                        {
+                                            "serverName":  "ZERO",
+                                            "sellPrice":  460,
+                                            "buyPrice":  430
+                                        },
+                                        {
+                                            "serverName":  "FELIS",
+                                            "sellPrice":  189,
+                                            "buyPrice":  170
+                                        },
+                                        {
+                                            "serverName":  "AGARTHA",
+                                            "sellPrice":  410,
+                                            "buyPrice":  390
+                                        },
+                                        {
+                                            "serverName":  "PANDORA",
+                                            "sellPrice":  385,
+                                            "buyPrice":  365
+                                        },
+                                        {
+                                            "serverName":  "DRYADS",
+                                            "sellPrice":  235,
+                                            "buyPrice":  220
+                                        },
+                                        {
+                                            "serverName":  "DESTAN",
+                                            "sellPrice":  410,
+                                            "buyPrice":  390
+                                        },
+                                        {
+                                            "serverName":  "MINARK",
+                                            "sellPrice":  275,
+                                            "buyPrice":  255
+                                        },
+                                        {
+                                            "serverName":  "OREADS",
+                                            "sellPrice":  310,
+                                            "buyPrice":  285
+                                        }
+                                    ]
+                    },
+                    {
+                        "id":  "bursagb",
+                        "servers":  [
+                                        {
+                                            "serverName":  "ZERO",
+                                            "sellPrice":  461.4,
+                                            "buyPrice":  336
+                                        },
+                                        {
+                                            "serverName":  "FELIS",
+                                            "sellPrice":  194.7,
+                                            "buyPrice":  130.9
+                                        },
+                                        {
+                                            "serverName":  "AGARTHA",
+                                            "sellPrice":  422.3,
+                                            "buyPrice":  218.3
+                                        },
+                                        {
+                                            "serverName":  "PANDORA",
+                                            "sellPrice":  393.5,
+                                            "buyPrice":  167.6
+                                        },
+                                        {
+                                            "serverName":  "DRYADS",
+                                            "sellPrice":  244.8,
+                                            "buyPrice":  138.8
+                                        },
+                                        {
+                                            "serverName":  "DESTAN",
+                                            "sellPrice":  419.2,
+                                            "buyPrice":  298.7
+                                        },
+                                        {
+                                            "serverName":  "MINARK",
+                                            "sellPrice":  270.3,
+                                            "buyPrice":  152
+                                        },
+                                        {
+                                            "serverName":  "OREADS",
+                                            "sellPrice":  319.3,
+                                            "buyPrice":  211
+                                        }
+                                    ]
+                    },
+                    {
+                        "id":  "gamesatis",
+                        "servers":  [
+                                        {
+                                            "serverName":  "ZERO",
+                                            "sellPrice":  463,
+                                            "buyPrice":  425
+                                        },
+                                        {
+                                            "serverName":  "FELIS",
+                                            "sellPrice":  192,
+                                            "buyPrice":  175
+                                        },
+                                        {
+                                            "serverName":  "AGARTHA",
+                                            "sellPrice":  410,
+                                            "buyPrice":  378
+                                        },
+                                        {
+                                            "serverName":  "PANDORA",
+                                            "sellPrice":  385,
+                                            "buyPrice":  358
+                                        },
+                                        {
+                                            "serverName":  "DRYADS",
+                                            "sellPrice":  238,
+                                            "buyPrice":  220
+                                        },
+                                        {
+                                            "serverName":  "DESTAN",
+                                            "sellPrice":  405,
+                                            "buyPrice":  350
+                                        },
+                                        {
+                                            "serverName":  "MINARK",
+                                            "sellPrice":  268,
+                                            "buyPrice":  245
+                                        },
+                                        {
+                                            "serverName":  "OREADS",
+                                            "sellPrice":  310,
+                                            "buyPrice":  286
+                                        }
+                                    ]
+                    },
+                    {
+                        "id":  "oyunfor",
+                        "servers":  [
+                                        {
+                                            "serverName":  "ZERO",
+                                            "sellPrice":  460,
+                                            "buyPrice":  430
+                                        },
+                                        {
+                                            "serverName":  "FELIS",
+                                            "sellPrice":  190,
+                                            "buyPrice":  165
+                                        },
+                                        {
+                                            "serverName":  "AGARTHA",
+                                            "sellPrice":  415,
+                                            "buyPrice":  380
+                                        },
+                                        {
+                                            "serverName":  "PANDORA",
+                                            "sellPrice":  385,
+                                            "buyPrice":  355
+                                        },
+                                        {
+                                            "serverName":  "DRYADS",
+                                            "sellPrice":  245,
+                                            "buyPrice":  220
+                                        },
+                                        {
+                                            "serverName":  "DESTAN",
+                                            "sellPrice":  410,
+                                            "buyPrice":  385
+                                        },
+                                        {
+                                            "serverName":  "MINARK",
+                                            "sellPrice":  270,
+                                            "buyPrice":  235
+                                        },
+                                        {
+                                            "serverName":  "OREADS",
+                                            "sellPrice":  310,
+                                            "buyPrice":  285
+                                        }
+                                    ]
+                    },
+                    {
+                        "id":  "klasgame",
+                        "servers":  [
+                                        {
+                                            "serverName":  "ZERO",
+                                            "sellPrice":  465,
+                                            "buyPrice":  430
+                                        },
+                                        {
+                                            "serverName":  "FELIS",
+                                            "sellPrice":  195,
+                                            "buyPrice":  160
+                                        },
+                                        {
+                                            "serverName":  "AGARTHA",
+                                            "sellPrice":  415,
+                                            "buyPrice":  385
+                                        },
+                                        {
+                                            "serverName":  "PANDORA",
+                                            "sellPrice":  385,
+                                            "buyPrice":  355
+                                        },
+                                        {
+                                            "serverName":  "DRYADS",
+                                            "sellPrice":  240,
+                                            "buyPrice":  222.5
+                                        },
+                                        {
+                                            "serverName":  "DESTAN",
+                                            "sellPrice":  407.5,
+                                            "buyPrice":  380
+                                        },
+                                        {
+                                            "serverName":  "MINARK",
+                                            "sellPrice":  270,
+                                            "buyPrice":  242.5
+                                        },
+                                        {
+                                            "serverName":  "OREADS",
+                                            "sellPrice":  310,
+                                            "buyPrice":  280
+                                        }
+                                    ]
+                    }
+                ],
+    "serverStatusHtml":  "\u003cdiv\u003eVeri baÅŸarÄ±yla gÃ¼ncellendi.\u003c/div\u003e"
+}

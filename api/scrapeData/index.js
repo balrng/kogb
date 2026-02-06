@@ -1,7 +1,16 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
 const axios = require('axios');
 const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 const { URL } = require('url');
+
+// Try to load @sparticuz/chromium for Azure compatibility
+let chromium;
+try {
+    chromium = require('@sparticuz/chromium');
+} catch (e) {
+    chromium = null;
+}
 
 const containerName = "data";
 const configContainerName = "cache";
@@ -102,14 +111,50 @@ async function scrapeVendorData(config, context) {
     try {
         let htmlContent;
         
-        // Try axios (will fail on Cloudflare, but simple and lightweight)
-        context.log('Attempting to fetch with axios...');
-        const priceResponse = await axios.get(SCRAPE_URL, { 
-            headers: BROWSER_HEADERS, 
-            timeout: 10000
-        });
-        htmlContent = priceResponse.data;
-        context.log('Successfully fetched with axios, content length:', htmlContent.length);
+        // Use Puppeteer with proper browser launch options
+        context.log('Launching Puppeteer for Cloudflare-friendly scraping...');
+        
+        // Build launch options - use @sparticuz/chromium if available
+        const launchOptions = {
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--single-process',
+                '--disable-gpu'
+            ]
+        };
+        
+        // If @sparticuz/chromium is available, use it (for Azure)
+        if (chromium) {
+            context.log('Using @sparticuz/chromium for Azure compatibility');
+            launchOptions.args = chromium.args;
+            launchOptions.executablePath = await chromium.executablePath();
+            launchOptions.headless = chromium.headless;
+        }
+        
+        const browser = await puppeteer.launch(launchOptions);
+        try {
+            const page = await browser.newPage();
+            await page.setUserAgent(BROWSER_HEADERS['User-Agent']);
+            
+            context.log(`Navigating to ${SCRAPE_URL}...`);
+            await page.goto(SCRAPE_URL, { 
+                waitUntil: 'domcontentloaded', 
+                timeout: 40000 
+            });
+            
+            htmlContent = await page.content();
+            context.log(`✓ Successfully fetched with Puppeteer, HTML length: ${htmlContent.length}`);
+            
+        } finally {
+            try {
+                await browser.close();
+            } catch (e) {
+                context.log('Warning: browser.close() failed:', e.message);
+            }
+        }
         
         context.log('scrapeVendorData: HTML response length:', htmlContent.length);
         context.log('scrapeVendorData: First 500 chars:', htmlContent.slice(0, 500));
