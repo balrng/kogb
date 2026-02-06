@@ -35,30 +35,28 @@ jobs:
           const connStr = process.env.KOGB_STORAGE_CONNECTION_STRING;
           if (!connStr) {
             console.error('❌ Error: KOGB_STORAGE_CONNECTION_STRING secret not set!');
-            console.error('Please add the secret to GitHub repository settings');
-            console.error('Go to: https://github.com/balrng/kogb/settings/secrets/actions');
             process.exit(1);
           }
           
-          try {
-            const data = fs.readFileSync('local-scrape.json', 'utf-8');
-            const client = BlobServiceClient.fromConnectionString(connStr);
-            const container = client.getContainerClient('cache');
-            const blob = container.getBlobClient('latest_with_trend.json');
-            
-            blob.upload(data, Buffer.byteLength(data)).then(() => {
+          async function uploadBlob() {
+            try {
+              const data = fs.readFileSync('local-scrape.json', 'utf-8');
+              const client = BlobServiceClient.fromConnectionString(connStr);
+              const container = client.getContainerClient('cache');
+              const blobClient = container.getBlockBlobClient('latest_with_trend.json');
+              
+              await blobClient.upload(data, Buffer.byteLength(data));
+              
               const parsed = JSON.parse(data);
               console.log('✓ Uploaded to Azure Blob Storage');
               console.log(`  Vendors: ${parsed.vendors.length}`);
               console.log(`  Timestamp: ${parsed.scrapedAt}`);
-            }).catch(err => {
-              console.error('✗ Upload failed:', err.message);
+            } catch (error) {
+              console.error('✗ Upload failed:', error.message);
               process.exit(1);
-            });
-          } catch (error) {
-            console.error('✗ Error:', error.message);
-            process.exit(1);
+            }
           }
+          uploadBlob();
           EOF
         env:
           KOGB_STORAGE_CONNECTION_STRING: ${{ secrets.KOGB_STORAGE_CONNECTION_STRING }}
