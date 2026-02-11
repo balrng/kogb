@@ -1,0 +1,18 @@
+{
+  "name": "kogb-scheduler",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GitHub Actions trigger scheduler for Ko_gb",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@azure/storage-blob": "^12.17.0",
+    "cheerio": "^1.1.2",
+    "puppeteer": "^24.36.1"
+  }
+}

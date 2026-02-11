@@ -8,6 +8,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalButton = document.querySelector('.close-button');
     const API_BASE = (window.location.hostname === 'localhost' && window.location.port !== '7071') ? 'http://localhost:7071' : '';
     let config = {};
+    let healthPingStarted = false;
+
+    function startHealthPing(settings) {
+        if (healthPingStarted) return;
+        const url = settings?.healthPingUrl;
+        if (!url) return;
+        const intervalSeconds = Number(settings?.healthPingIntervalSeconds || 60);
+        const intervalMs = Math.max(10, intervalSeconds) * 1000;
+        healthPingStarted = true;
+
+        const ping = () => {
+            fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+        };
+
+        ping();
+        setInterval(ping, intervalMs);
+    }
 
     function highlightTableCells() {
         if (!tableBody) return;
@@ -70,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cfgResp = await fetch(`${API_BASE}/api/getConfig`);
                 if (!cfgResp.ok) throw new Error('Config not available');
                 config = await cfgResp.json();
+                startHealthPing(config.settings);
             }
             // Fetch prices only and derive last update from the cache blob
             const priceResp = await fetch(`${API_BASE}/api/getPrices`);
